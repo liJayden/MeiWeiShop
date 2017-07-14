@@ -1,0 +1,143 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>登录</title>
+<!-- link css -->
+<link href="${pageContext.request.contextPath}/css/style.reset.css"
+	rel="stylesheet" type="text/css" />
+<link href="${pageContext.request.contextPath}/css/css3style.css"
+	rel="stylesheet" type="text/css" />
+<link href="${pageContext.request.contextPath}/css/font-color-size.css"
+	rel="stylesheet" type="text/css" />
+<link
+	href="${pageContext.request.contextPath}/css/table.select.style.css"
+	rel="stylesheet" type="text/css" />
+<link href="${pageContext.request.contextPath}/css/login-style.css"
+	rel="stylesheet" type="text/css" />
+	
+	<style type="text/css">
+	#div{
+	position: relative;
+	left: 600px;
+	}
+	</style>
+	
+	<script type="text/javascript">
+	function change(){
+		var img1 = document.getElementById("checkImg");
+		img1.src="/MWShop/MWController/Code?"+new Date().getTime();
+	}
+	
+	var value= "<%=request.getParameter("error") %>"
+	if(value=="y"){
+		alert("密码错误，请重新输入！")
+	}else if(value=="c"){
+		alert("验证码错误，请重新输入！")
+	}
+	</script>
+</head>
+
+<body>
+	<!-- 顶部 -->
+	<div class="login-top center"></div>
+
+	<!-- 登录 -->
+	<div class="login-body shadow center">
+
+		<div class="clear center" style="width: 94%; height: 60px;">
+			<span style="display: none">此DIV起增高作用！</span>
+		</div>
+		<div class="login-enter enterInput center">
+		<form action="/MWShop/MWController/login" method="post">
+			<table width="100%" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td width="67%" rowspan="5">
+						<div class="login-focus fr" style="border-right: 1px dotted #ccc">
+							<img src="${pageContext.request.contextPath}/img/other/focus01.jpg"	width="450" height="295" />
+						</div>
+					</td>
+				</tr>
+					<tr><td width="33%"><span style="color: black;">用戶名：</span><input type="text" class="login-input-text  box-shadow fl" id="user"  name="username"  required="required" placeholder="用户名"/></td></tr>
+                    
+					<tr><td><span style="color: black;">密码：</span><input type="password" class="login-input-text  box-shadow fl" id="user"  name="password"  required="required" placeholder="密码"/></td></tr>
+				 <tr>
+				<td><span style="color: black;">验证码：</span><br><input type="text" style="width: 100px" class="login-input-text  box-shadow fl"  id="checkcode"  name="checkcode"  required="required" placeholder="验证码"/>&nbsp;&nbsp;<img id="checkImg" class="captchaImage" src="/MWShop/MWController/Code" onclick="change()" title="点击更换验证码"/></td>
+		      </tr>
+				
+				<tr>
+					<td>
+							<p style="padding-top: 15px; _padding-top: 5px">
+								<button type="submit" class="login-input-submit fl">登 录</button>
+							</p>
+					</td>
+				</tr>
+				</form>
+				<tr>
+					<td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td>
+						<div style="border-bottom: 1px dotted #CCCCCC; width: 250px; padding: 7px 0; margin-bottom: 7px" id="div">
+							<a href="forgotpw.jsp">忘了密码？</a>
+							&nbsp;&nbsp; | &nbsp;&nbsp;
+							<a href="register.jsp">注册新帐号</a>
+							&nbsp;&nbsp; 
+						</div>
+
+						<!-- <div>
+							<span><strong>合作账号登录</strong></span> 腾讯QQ 新浪微博 淘宝账号
+						</div> -->
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div class="clear center" style="width: 94%; height: 60px;">
+			<span style="display: none">此DIV起增高作用！</span>
+		</div>
+
+	</div>
+
+	<!-- 底部 -->
+	<div class="login-bottom center">
+		<p>
+			<a href="#">关于我们</a> | <a href="#">招贤纳士</a> | <a href="#">新闻资讯</a> |
+			<a href="#">联系我们</a> | <a href="#">免责条款</a>
+		</p>
+		<p>
+			Copyright©2009-2014 美唯电器城 All Rights Reserved<br /> 美唯电器城 广东广州市黄埔区
+			联系电话：（86）0551-123456789<br /> 粤ICP备012344578号
+		</p>
+	</div>
+
+	<!-- JS调用 -->
+	<script language="JavaScript" type="text/javascript">
+/* 		function addListener(element, e, fn) {
+			if (element.addEventListener) {
+				element.addEventListener(e, fn, false);
+			} else {
+				element.attachEvent("on" + e, fn);
+			}
+		}
+		var user = document.getElementById("user");
+		addListener(user, "click", function() {
+			user.value = "";
+			//		user.style.border = "1px solid #919db6";
+		})
+		addListener(user, "blur", function() {
+			user.value = "用户名/邮箱/手机";
+			//		user.style.border = "1px solid #d7d4d4";
+		})
+		var mima = document.getElementById("mima");
+		addListener(mima, "click", function() {
+			mima.value = "";
+			//		user.style.border = "1px solid #919db6";
+		})
+		addListener(mima, "blur", function() {
+			mima.value = "密码";
+			//		user.style.border = "1px solid #d7d4d4";
+		}) */
+	</script>
+</body>
+</html>

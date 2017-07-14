@@ -1,0 +1,63 @@
+package com.etc.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.etc.bean.Orderitem;
+import com.etc.bean.Orders;
+import com.etc.dao.OrderitemMapper;
+import com.etc.dao.OrdersMapper;
+
+@Service
+public class OrderService {
+	
+	@Autowired
+	OrdersMapper ordersMapper;
+	@Autowired
+	OrderitemMapper orderitemMapper;
+	
+	@Transactional  
+	public void addOrder(Orders orders){
+		
+		List<Orderitem> orderItemList = orders.getOrderItemList();
+		if(orderItemList.size()!=0){
+			ordersMapper.insertSelective(orders);
+			orderitemMapper.addOrderItemList(orders.getOrderItemList());
+			
+		}
+		return;
+	}
+	
+	public String findOrdertimeByOid(String oid){
+		return ordersMapper.findOrdertimeByOid(oid);
+	}
+
+	public List<Orders> findOrder(String oid){
+		return ordersMapper.selectByOid(oid);
+	}
+
+	public List<Orders> findOrderByUid(Integer uid) {
+		return ordersMapper.findOrderByUid(uid);
+	}
+
+	public void delectOrder(String oid) {
+		ordersMapper.deleteByPrimaryKey(oid);
+	}
+	
+	public Orders findOrders(String oid) {
+		return ordersMapper.selectByPrimaryKey(oid);
+	}
+	
+	public int updateState(Orders orders){
+		return ordersMapper.updateByPrimaryKeySelective(orders);
+	}
+
+	public List<Orders> findOrderByOid(String oid) {
+		// TODO Auto-generated method stub
+		return ordersMapper.selectByOid(oid);
+	}
+	
+}

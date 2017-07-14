@@ -1,0 +1,92 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+	<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Insert title here</title>
+
+</head>
+<body>
+<!-- 顶部 -->
+	<div class="index-top-box">
+		<div class="index-top center">
+    	<!--收藏夹-->
+			<div class="checkCity favorit css3bg fr" onMouseover="jsoverD();" onMouseout="jsoutD();" >&nbsp;&nbsp;<a href="${pageContext.request.contextPath}/jsp/shoucang.jsp">收藏夹</a>
+				<!--收藏夹/显示的内容-->
+				<div class="Collection-of-goods none-r" id="d1" onMouseover="jsoverD();" onMouseout="jsoutD();" >
+					<p align="center" style="line-height:22px ; padding:10px 0">收藏夹是空的！</p>
+				</div>
+			</div>
+			<!--客户服务-->
+			<div class="fr noneAny"><a href="${pageContext.request.contextPath}/jsp/help.jsp">客户服务</a></div>
+			<!--我的订单-->
+			<div class="fr noneAny"><a href="/MWShop/OrderController/myOrder">我的订单</a></div>
+			<!--登录-->
+			<c:if test="${not empty users}">
+				<div class="fr noneAny"><a href="${pageContext.request.contextPath}/jsp/mycart.jsp">[我的购物车]</a></div>
+				<div class="fr noneAny"><a href="/MWShop/ExitController/ExitMethod">[安全退出]</a></div>
+				<div class="fr noneAny"><a href="${pageContext.request.contextPath}/jsp/index.jsp">${users.username}</a></div>
+			</c:if>
+			<c:if test="${ empty users }">			
+				<div class="fr noneAny"><a href="${pageContext.request.contextPath}/jsp/register.jsp">[免费注册]</a></div>
+				<div class="fr noneAny"><a href="${pageContext.request.contextPath}/jsp/login.jsp">[登录]</a></div>
+			</c:if>
+			
+			<!--亲，欢迎来！-->
+			<div class="fr noneAny">亲，欢迎来美唯电器城！</div>
+		</div>
+	</div>
+	<!-- 顶部结束-->
+	<div class="clear"></div>
+	<!-- logo开始-->
+	<div class="logoBox center">
+		<!--左侧logo-->
+		<div class="logo fl" style="position: relative; bottom:25px;">
+			<span class="fl"><img src="${pageContext.request.contextPath}/img/login/mewelogo.PNG" /></span>
+		</div>
+		<!--右侧search-->
+		<div class="searchBox fl">
+			
+			<!--搜索BOX-->
+			<div class="searchinput fr">
+				<!--搜索-->
+				<form id="actionForm" action="/MWShop/SearchController/searchProduct" method="POST">
+				<div class="S-bg">
+					<input type="text" class="S-text fl" value="${queryString }" style="color:#c4c4c4"accesskey="s" id="key" autocomplete="off" onkeydown="javascript:if(event.keyCode==13) {query()}"/>
+					<input type="submit" value="搜索" class="S-submit size14 f1" onclick="query()">
+				</div>
+				<input type="hidden" name="csid" id="csid" value="${csid }"/> 
+				<input type="hidden" name="shopprice" id="shopprice" value="${shopprice }"/> 
+				<input type="hidden" name="page" id="page" value="${result.curPage }"/> 
+				<input type="hidden" name="sort" id="sort" value="${sort }"/> 
+				</form>
+				
+			</div>
+			
+		</div>
+	</div>
+	<!-- logo结束-->
+	<div class="clear"></div>
+	<!-- 导航开始-->
+	<div class="navBox">
+		<div class="nav center">
+			<!--商品分类-->
+			<div class="classification fl">
+				<div class="hd size14-b">商品分类</div>
+			</div>
+			<!--导航栏目-->
+			<div class="bigNav fl">
+				<ul>
+					<li><a href="${pageContext.request.contextPath}/jsp/index.jsp">商城首页</a></li>
+					<li><a href="${pageContext.request.contextPath}/jsp/brand.jsp">品牌专区</a></li>
+					<li><a href="${pageContext.request.contextPath}/jsp/oto-about.jsp">关于我们</a></li>
+				</ul>
+			</div>
+			<!--购物车-->
+			<a href="${pageContext.request.contextPath}/jsp/mycart.jsp"><div class="shopping-cart fr size14">购物车 </div></a>
+		</div>
+	</div>
+</body>
+</html>

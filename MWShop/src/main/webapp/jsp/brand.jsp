@@ -1,0 +1,219 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>产品列表</title>
+<link href="${pageContext.request.contextPath}/css/style.reset.css"
+	rel="stylesheet" type="text/css" />
+<link href="${pageContext.request.contextPath}/css/css3style.css"
+	rel="stylesheet" type="text/css" />
+<link href="${pageContext.request.contextPath}/css/font-color-size.css"
+	rel="stylesheet" type="text/css" />
+<link
+	href="${pageContext.request.contextPath}/css/table.select.style.css"
+	rel="stylesheet" type="text/css" />
+<link href="${pageContext.request.contextPath}/css/top-style.css"
+	rel="stylesheet" type="text/css" />
+<link href="${pageContext.request.contextPath}/css/index-body-style.css"
+	rel="stylesheet" type="text/css" />
+<link href="${pageContext.request.contextPath}/css/me_home.css"
+	rel="stylesheet" type="text/css" />
+<link href="${pageContext.request.contextPath}/css/search.css"
+	rel="stylesheet" type="text/css" />
+<link href="${pageContext.request.contextPath}/css/band_style.css"
+	rel="stylesheet" type="text/css" />
+ 
+
+<script src="oto./top-city-check."></script>
+
+<style type="text/css">
+.shangpin_Box_button1{
+margin-top: 30px;
+}
+
+#li{
+width: 220px;
+}
+</style>
+</head>
+
+<body>
+	<jsp:include page="/common/head.jsp"></jsp:include>
+	<!--导航结束-->
+	<div class="clear"></div>
+
+	<!--位置-->
+	<div class="user_here center">所在的位置：美唯电器城 > 品牌搜索</div>
+
+	<div class="ibody">
+		<!--产品普通排列图-->
+		<div class="shangpin_Box center">
+			<ul>
+
+				<!--所有分类分页  -->
+				<c:forEach items="${pageInfo.list}" var="product">
+					<li id="li">
+						<div class="padding10">
+							<p>
+								<img src="${pageContext.request.contextPath}/${product.image}"
+									width="200" height="200" />
+							</p>
+							<p class="color4 size20">￥ ${product.shopprice}</p>
+							<p class="shangpin_Box_text">
+								<a
+									href="/MWShop/ProductController/findProductByPid?pid=${product.pid}">
+									${product.pname}</a>
+							</p>
+							<%-- <p>${product.pdesc}</p> --%>
+							<form id="form" action="<c:url value='/CartController/addCart'/>" method="post">
+							<p class="btn_buy" align="center">
+							<input type="hidden" name="method" value="addCart" />
+							<input type="hidden" name="pid" value="${product.pid}" />
+							<input type="hidden"name="count" value="1"  />					  
+							<a href="javascript:document.getElementById('form').submit();"><button  class="shangpin_Box_button1">加入购物车</button></a>
+							</p>
+							</form>	
+						</div>
+					</li>
+				</c:forEach>
+
+				<!--小分类分页  -->
+				<c:forEach items="${pageInfos.list}" var="product">
+					<li>
+						<div class="padding10">
+							<p>
+								<img src="${pageContext.request.contextPath}/${product.image}"
+									width="200" height="200" />
+							</p>
+							<p class="color4 size20">￥ ${product.shopprice}</p>
+							<p class="shangpin_Box_text">
+								<a
+									href="/MWShop/ProductController/findProductByPid?pid=${product.pid}">
+									${product.pname}</a>
+							</p>
+							<%-- <p>${product.pdesc}</p> --%>
+							<a href="/MWShop/CartController/addCart?pid=pid${product.pid}">
+							<p class="btn_buy" align="center">
+								<button class="shangpin_Box_button1">加入购物车</button>
+							</p>
+							</a>
+						</div>
+					</li>
+				</c:forEach>
+
+			</ul>
+		
+		</div>
+
+		<div class="all_page" id="page_style">
+			<nav>
+				<ul>
+					<li class="li"><a
+						href="${pageContext.request.contextPath}/jsp/brand.jsp?pn=1"
+						id="aa">首页</a></li>
+					<c:if test="${pageInfo.hasPreviousPage}">
+						<li class="li"><a
+							href="${pageContext.request.contextPath}/jsp/brand.jsp?pn=${pageInfo.pageNum-1 }"
+							aria-label="Previous" id="aa"> <span aria-hidden="true">&laquo;</span>
+						</a></li>
+					</c:if>
+
+					<c:forEach var="pageNum" items="${pageInfo.navigatepageNums}">
+						<c:if test="${pageNum==pageInfo.pageNum}">
+							<li class="li"><a
+								href="${pageContext.request.contextPath}/jsp/brand.jsp?pn=${pageNum}"
+								id="aa">${pageNum}</a></li>
+						</c:if>
+
+						<c:if test="${pageNum!=pageInfo.pageNum}">
+							<li class="li"><a
+								href="${pageContext.request.contextPath}/jsp/brand.jsp?pn=${pageNum}"
+								id="aa">${pageNum}</a></li>
+						</c:if>
+
+					</c:forEach>
+
+					<c:if test="${pageInfo.hasNextPage}">
+						<li class="li"><a
+							href="${pageContext.request.contextPath}/jsp/brand.jsp?pn=${pageInfo.pageNum+1 }"
+							aria-label="Next" id="aa"> <span aria-hidden="true">&raquo;</span>
+						</a></li>
+					</c:if>
+					<li class="li"><a
+						href="${pageContext.request.contextPath}/jsp/brand.jsp?pn=${pageInfo.pages}"
+						id="aa">末页</a></li>
+
+				</ul>
+			</nav>
+			<div id="divs page_show" class="divs" id="page_style">当前是第${pageInfo.pageNum}页/${pageInfo.pages}页</div>
+		</div>
+
+
+
+		<!--底部导航-->
+		<div class="footerLink">
+			<div class="footerLink_ul center">
+				<ul>
+					<h2>关于美唯</h2>
+					<li><a
+						href="${pageContext.request.contextPath}/jsp/oto-about.jsp">关于我们</a></li>
+					<li><a href="oto-zxns.jsp">招贤纳士</a></li>
+				</ul>
+				<ul>
+					<h2>购物指南</h2>
+					<li><a
+						href="${pageContext.request.contextPath}/jsp/oto-help.jsp#gwlc">购物流程</a></li>
+					<li><a
+						href="${pageContext.request.contextPath}/jsp/oto-help.jsp#hyjs">会员介绍</a></li>
+					<li><a
+						href="${pageContext.request.contextPath}/jsp/oto-help.jsp#cjwt">常见问题</a></li>
+					<li><a
+						href="${pageContext.request.contextPath}/jsp/oto-help.jsp#lxkf">联系客服</a></li>
+				</ul>
+				<ul>
+					<h2>配送方式</h2>
+					<li><a
+						href="${pageContext.request.contextPath}/jsp/oto-help.jsp#smzt">上门自提</a></li>
+					<li><a
+						href="${pageContext.request.contextPath}/jsp/oto-help.jsp#xssd">限时送达</a></li>
+					<li><a href="oto-help.jsp#psfwcx">配送服务查询</a></li>
+				</ul>
+				<ul>
+					<h2>支付方式</h2>
+					<li><a href="oto-help.jsp#hdfk">货到付款</a></li>
+					<li><a href="oto-help.jsp#zxzf">在线支付</a></li>
+					<li><a href="oto-help.jsp#xrfk">新人付款</a></li>
+				</ul>
+				<ul>
+					<h2>新手上路</h2>
+					<li><a href="oto-help.jsp#xszq">新手专区</a></li>
+					<li><a href="oto-help.jsp#jyaq">交易安全</a></li>
+					<li><a href="oto-help.jsp#xfjs">消费警示 </a></li>
+					<li><a href="oto-help.jsp#xszc">新手注册</a></li>
+					<li><a href="oto-help.jsp#xsxt">新手学堂</a></li>
+					<li><a href="oto-help.jsp#ywbd">24小时有问必答</a></li>
+				</ul>
+				<ul>
+					<h2>消费者保障</h2>
+					<li><a href="oto-help.jsp#bzfw">保障范围</a></li>
+					<li><a href="oto-help.jsp#thtklc">退货退款流程</a></li>
+					<li><a href="oto-help.jsp#wyfqwq">我要发起维权</a></li>
+					<li><a href="oto-help.jsp#gdtsfw">更多特色服务</a></li>
+					<li><a href="oto-help.jsp#fwzx">服务中心</a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="footer center">
+			<p class="footer-nav">
+				<a href="oto-about.jsp">关于我们</a> | <a href="oto-mztk.jsp">免责条款</a> |
+				<a href="oto-yqlj.jsp">友情链接</a> | <a href="oto-lxwm.jsp">联系我们</a>
+			</p>
+			<p>
+				Copyright©2009-2014 美唯电器城 All Rights Reserved<br /> 美唯电器城 广东广州市黄埔区
+				联系电话：（86）0551-123456789<br /> 皖ICP备012344578号
+			</p>
+		</div>
+</body>
+</html>

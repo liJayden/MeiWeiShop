@@ -1,0 +1,11 @@
+@CHARSET "UTF-8";
+
+#page_style{
+	display:block;
+	left: 450px;
+	position: relative;
+}
+
+#page_show{
+	display: block;
+}

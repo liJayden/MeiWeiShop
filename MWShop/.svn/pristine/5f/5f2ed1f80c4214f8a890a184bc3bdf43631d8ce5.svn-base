@@ -1,0 +1,243 @@
+package com.etc.controller;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.Random;
+
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.etc.bean.Cart;
+import com.etc.bean.Msg;
+import com.etc.bean.User;
+import com.etc.service.OrderService;
+import com.etc.service.RegisterService;
+import com.etc.utils.MD5Utils;
+import com.etc.utils.Mail;
+import com.etc.utils.UUIDUtils;
+
+@Controller
+@RequestMapping("MWController")
+public class MWController {
+	
+	@Autowired
+	RegisterService registerService;
+	@Autowired
+	OrderService orderService;
+	
+	
+	@SuppressWarnings("static-access")
+	@RequestMapping("register")
+	public String register( User record,HttpServletRequest request,String checkcode) {		
+		MD5Utils md5 =new MD5Utils();
+		record.setPassword(md5.MD5Password(record.getPassword()));
+		record.setState(0);
+		String code = UUIDUtils.getUUID() + UUIDUtils.getUUID();
+		record.setCode(code);
+		try {
+			int i = registerService.register(record);
+			if(i==1){
+				Mail.sendMail(record.getEmail(), code);
+				request.setAttribute("RigesterSuccess", "注册完成，请到邮箱激活！");
+			}
+		} catch (Exception e) {
+			return "redirect:/jsp/register.jsp?error=e";
+		}
+		return "activation";
+		
+	}
+
+	@RequestMapping("/active")
+	public String active(String code,HttpServletRequest request) {
+		System.out.println(code);
+		User existUser = registerService.active(code);
+
+		if (existUser.getCode() == null) {
+			
+			request.setAttribute("ActiveError", "激活失败,请重新注册！");
+			return "activation";
+		} else {
+			existUser.setState(1);
+			existUser.setCode(null);
+			registerService.updateById(existUser);
+			request.setAttribute("ActiveSuccess", "激活成功,请登陆！");
+		}
+
+		return "activation";
+	}
+	
+	/**
+	 * 获取验证码
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping("Code")
+	public void Code(HttpServletRequest request,HttpServletResponse response) throws Exception{
+		int width = 120;
+		int height = 30;
+
+		// 步骤一 绘制一张内存中图片
+		BufferedImage bufferedImage = new BufferedImage(width, height,
+				BufferedImage.TYPE_INT_RGB);
+
+		// 步骤二 图片绘制背景颜色 ---通过绘图对象
+		Graphics graphics = bufferedImage.getGraphics();// 得到画图对象 --- 画笔
+		// 绘制任何图形之前 都必须指定一个颜色
+		graphics.setColor(getRandColor(200, 250));
+		graphics.fillRect(0, 0, width, height);
+
+		// 步骤三 绘制边框
+		graphics.setColor(Color.WHITE);
+		graphics.drawRect(0, 0, width - 1, height - 1);
+
+		// 步骤四 四个随机数字
+		Graphics2D graphics2d = (Graphics2D) graphics;
+		// 设置输出字体
+		graphics2d.setFont(new Font("宋体", Font.BOLD, 18));
+		
+		 String words ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
+		Random random = new Random();// 生成随机数
+		// 定义StringBuffer 
+		StringBuffer sb = new StringBuffer();
+		// 定义x坐标
+		int x = 10;
+		for (int i = 0; i < 4; i++) {
+			// 随机颜色
+			graphics2d.setColor(new Color(20 + random.nextInt(110), 20 + random
+					.nextInt(110), 20 + random.nextInt(110)));
+			// 旋转 -30 --- 30度
+			int jiaodu = random.nextInt(60) - 30;
+			// 换算弧度
+			double theta = jiaodu * Math.PI / 180;
+
+			// 生成一个随机数字
+			int index = random.nextInt(words.length()); // 生成随机数 0 到 length - 1
+			// 获得字母数字
+			char c = words.charAt(index);
+			sb.append(c);
+			// 将c 输出到图片
+			graphics2d.rotate(theta, x, 20);
+			graphics2d.drawString(String.valueOf(c), x, 20);
+			graphics2d.rotate(-theta, x, 20);
+			x += 30;
+		}
+
+		// 将生成的字母存入到session中
+		request.getSession().setAttribute("checkcode", sb.toString());
+
+		// 步骤五 绘制干扰线
+		graphics.setColor(getRandColor(160, 200));
+		int x1;
+		int x2;
+		int y1;
+		int y2;
+		for (int i = 0; i < 30; i++) {
+			x1 = random.nextInt(width);
+			x2 = random.nextInt(12);
+			y1 = random.nextInt(height);
+			y2 = random.nextInt(12);
+			graphics.drawLine(x1, y1, x1 + x2, x2 + y2);
+		}
+		// 将上面图片输出到浏览器 ImageIO
+		graphics.dispose();// 释放资源
+		ImageIO.write(bufferedImage, "jpg", response.getOutputStream());
+	}
+
+	/**
+	 * 取其某一范围的color
+	 * @param fc
+	 *            int 范围参数1
+	 * @param bc
+	 *            int 范围参数2
+	 * @return Color
+	 */
+	private Color getRandColor(int fc, int bc) {
+		// 取其随机颜色
+		Random random = new Random();
+		if (fc > 255) {
+			fc = 255;
+		}
+		if (bc > 255) {
+			bc = 255;
+		}
+		int r = fc + random.nextInt(bc - fc);
+		int g = fc + random.nextInt(bc - fc);
+		int b = fc + random.nextInt(bc - fc);
+		return new Color(r, g, b);
+	}
+	
+	/**
+	 * 登陆
+	 */
+	@SuppressWarnings("static-access")
+	@RequestMapping("login")
+	public String login(User user,HttpServletRequest request,String checkcode){
+		String checkcode1  = (String) request.getSession().getAttribute("checkcode");
+		if(!checkcode.equalsIgnoreCase(checkcode1)){
+			return "redirect:/jsp/login.jsp?error=c";
+		}
+		user.setState(1);
+		MD5Utils md5=new MD5Utils();
+		user.setPassword(md5.MD5Password(user.getPassword()));
+		
+		boolean flag = registerService.login(user);
+
+		Integer state = registerService.findStateByName(user.getUsername());
+		if(state==0){
+			return "redirect:/jsp/login.jsp?error=s";
+		}else if(state==2){
+			return "redirect:/jsp/login.jsp?error=l";
+		}
+		
+		if(flag){
+			
+			registerService.updateStateByName(user.getUsername());
+			
+			/*
+			 * 给用户添加一个购物车，即向session中保存一Cart对象
+			 */
+			
+			request.getSession().setAttribute("cart", new Cart());
+			User users = registerService.findByUsername(user.getUsername());
+			
+			request.getSession().setAttribute("users", users);
+			return "forward:/SController/showCategory";
+		}
+		return "redirect:/jsp/login.jsp?error=y";
+	}
+
+	@RequestMapping("selectByName")
+	public void selectByName(HttpServletRequest request,HttpServletResponse response) throws Exception{
+		String username=request.getParameter("username");
+		if(username!=null||username!=""){
+			int num=registerService.selectByName(username);
+			if (num == 1) {
+				response.getWriter().write("success");
+			}else{
+				response.getWriter().write("error");
+			}
+		}	
+	}
+	
+	
+	@RequestMapping("registerCode")
+	public Msg registerCode(String checkcode,HttpServletRequest request,HttpServletResponse response) throws Exception{
+		System.out.println(checkcode);
+		String checkcode1  = (String) request.getSession().getAttribute("checkcode");
+		if(!checkcode.equalsIgnoreCase(checkcode1)){
+			return Msg.error().add("checkcode1", checkcode1);			
+		}
+	   return null;
+	}
+}

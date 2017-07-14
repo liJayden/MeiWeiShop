@@ -1,0 +1,366 @@
+package com.etc.controller;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.alipay.api.AlipayApiException;
+import com.alipay.api.internal.util.AlipaySignature;
+import com.alipay.demo.trade.config.Configs;
+import com.etc.bean.Cart;
+import com.etc.bean.CartItem;
+import com.etc.bean.Orderitem;
+import com.etc.bean.Orders;
+import com.etc.bean.Product;
+import com.etc.bean.User;
+import com.etc.service.OrderService;
+import com.etc.service.OrderitemService;
+import com.etc.service.ProductService;
+import com.etc.utils.PaymentUtil;
+import com.etc.utils.UUIDUtils;
+import com.google.common.collect.Maps;
+
+
+@Controller
+@RequestMapping("OrderController")
+public class OrderController {
+	
+	private static  final Logger logger = LoggerFactory.getLogger(OrderController.class);
+
+	private static final String LOGIN = "login";
+
+	@Autowired
+	OrderService orderService;
+	@Autowired
+	OrderitemService orderitemService;
+	@Autowired
+	ProductService productService;
+
+	/**
+	 * 添加订单
+	 * 
+	 * @param request
+	 * @return
+	 */
+
+	@RequestMapping("addOrder")
+	public String addOrder(HttpServletRequest request, HttpServletResponse response) {
+		User users = (User) request.getSession().getAttribute("users");
+		if (users == null) {
+			try {
+				response.sendRedirect("/MWShop/jsp/login.jsp");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return LOGIN;
+		} else {
+			Cart cart = (Cart) request.getSession().getAttribute("cart");
+			if (cart == null) {
+				System.out.println("亲!您还没有购物!");
+			}
+			Orders orders = new Orders();
+
+			orders.setOid(UUIDUtils.getUUID());
+			orders.setTotal(cart.getTotal());
+			orders.setState(1);
+
+			orders.setPhone(users.getPhone());
+			orders.setAddr(users.getAddr());
+			orders.setUid(users.getUid());
+			orders.setName(users.getName());
+
+			List<Orderitem> orderItemList = new ArrayList<Orderitem>();
+			List<Product> products = new ArrayList<Product>();
+			List<Product> ProductList = new ArrayList<Product>();
+			for (CartItem cartItem : cart.getCartItems()) {
+				Orderitem orderitem = new Orderitem();
+				orderitem.setCount(cartItem.getCount());
+				orderitem.setPid(cartItem.getProduct().getPid());
+				orderitem.setSubtotal(cartItem.getSubtotal());
+				orderitem.setOid(orders.getOid());
+				orderItemList.add(orderitem);
+				products = productService.findProductByPid(cartItem.getProduct().getPid());
+				for (int i = 0; i < 1; i++) {
+					ProductList.add(products.get(i));
+				}
+			}
+			request.getSession().setAttribute("ProductList", ProductList);
+			orders.setOrderItemList(orderItemList);
+			orderService.addOrder(orders);
+
+			// 查询订单下单时间
+			String Ordertime = orderService.findOrdertimeByOid(orders.getOid());
+			request.getSession().setAttribute("Ordertime", Ordertime);
+
+			List<Orders> orderlist = orderService.findOrder(orders.getOid());
+			request.setAttribute("orderlist", orderlist);
+			List<Orderitem> orderitemList = orderitemService.findOrderitemByOid(orders.getOid());
+			request.setAttribute("orderitemList", orderitemList);
+			cart.clear();
+			return "orders";
+		}
+	}
+
+	/**
+	 * 我的订单
+	 */
+	@RequestMapping("myOrder")
+	public String myOrder(HttpServletRequest request) {
+		User users = (User) request.getSession().getAttribute("users");
+		if (users == null) {
+			request.setAttribute("Message", "亲，您还没登陆！无法查看订单");
+		}
+		List<Orders> OrderList = orderService.findOrderByUid(users.getUid());
+		List<Product> products = new ArrayList<Product>();
+		List<Orderitem> orderitems = new ArrayList<Orderitem>();
+		List<Orders> orders = new ArrayList<Orders>();
+		for (Orders order : OrderList) {
+			List<Orderitem> OrderitemList = orderitemService.findOrderitemByOid(order.getOid());
+			for (Orderitem orderitem : OrderitemList) {
+				List<Product> productList = productService.findProductByPid(orderitem.getPid());
+				for (Product product : productList) {
+					products.add(product);
+				}
+				orderitems.add(orderitem);
+			}
+			orders.add(order);
+		}
+		request.setAttribute("productList", products);
+		request.setAttribute("OrderitemLists", orderitems);
+		request.setAttribute("OrderList", orders);
+		return "userorder";
+	}
+
+	/**
+	 * 删除订单条目
+	 */
+	@RequestMapping("deleteOrders")
+	public String deleteOrders(String oid, HttpServletRequest request) {
+		System.out.println(oid);
+		orderitemService.delectOrderitem(oid);
+		request.setAttribute("oid", oid);
+		return "forward:/OrderController/deleteOrder";
+	}
+
+	/**
+	 * 删除订单
+	 * 
+	 * @param oid
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping("deleteOrder")
+	public String deleteOrder(String oid, HttpServletRequest request) {
+		request.getAttribute(oid);
+		orderService.delectOrder(oid);
+		return "forward:/OrderController/myOrder";
+	}
+
+	/**
+	 * 加载付款订单
+	 */
+	@RequestMapping("loadOrder")
+	public String loadOrder(String oid, HttpServletRequest request) {
+		List<Orders> OrderList = orderService.findOrder(oid);
+		String Ordertime = orderService.findOrdertimeByOid(oid);
+		request.getSession().setAttribute("Ordertime", Ordertime);
+		for (Orders orders : OrderList) {
+			List<Orderitem> orderitemList = orderitemService.findOrderitemByOid(orders.getOid());
+			request.setAttribute("orderitemList", orderitemList);
+			for (Orderitem orderitem : orderitemList) {
+				List<Product> ProductList = productService.findProductByPid(orderitem.getPid());
+				request.setAttribute("ProductList", ProductList);
+			}
+		}
+
+		request.setAttribute("orderlist", OrderList);
+
+		return "orders";
+	}
+
+	/**
+	 * 支付订单
+	 * 
+	 * @throws IOException
+	 */
+	@RequestMapping("payOrder")
+	public String payOrder(String pd_FrpIds, String oid, HttpServletResponse response) throws IOException {
+		// 完成付款:
+		// 付款需要的参数:
+		String p0_Cmd = "Buy"; // 业务类型:
+		String p1_MerId = "10001126856";// 商户编号:
+		String p2_Order = oid;// 订单编号:
+		String p3_Amt = "0.01"; // 付款金额:
+		String p4_Cur = "CNY"; // 交易币种:
+		String p5_Pid = ""; // 商品名称:
+		String p6_Pcat = ""; // 商品种类:
+		String p7_Pdesc = ""; // 商品描述:
+		String p8_Url = "http://localhost:8081/MWShop/OrderController/callBack"; // 商户接收支付成功数据的地址:
+		String p9_SAF = ""; // 送货地址:
+		String pa_MP = ""; // 商户扩展信息:
+		String pd_FrpId = pd_FrpIds;// 支付通道编码:
+		String pr_NeedResponse = "1"; // 应答机制:
+		String keyValue = "69cl522AV6q613Ii4W6u8K6XuW8vM1N6bFgyv769220IuYe9u37N4y7rI4Pl"; // 秘钥
+		String hmac = PaymentUtil.buildHmac(p0_Cmd, p1_MerId, p2_Order, p3_Amt, p4_Cur, p5_Pid, p6_Pcat, p7_Pdesc,
+				p8_Url, p9_SAF, pa_MP, pd_FrpId, pr_NeedResponse, keyValue); // hmac
+
+		// 向易宝发送请求:
+		StringBuffer sb = new StringBuffer("https://www.yeepay.com/app-merchant-proxy/node?");
+		sb.append("p0_Cmd=").append(p0_Cmd).append("&");
+		sb.append("p1_MerId=").append(p1_MerId).append("&");
+		sb.append("p2_Order=").append(p2_Order).append("&");
+		sb.append("p3_Amt=").append(p3_Amt).append("&");
+		sb.append("p4_Cur=").append(p4_Cur).append("&");
+		sb.append("p5_Pid=").append(p5_Pid).append("&");
+		sb.append("p6_Pcat=").append(p6_Pcat).append("&");
+		sb.append("p7_Pdesc=").append(p7_Pdesc).append("&");
+		sb.append("p8_Url=").append(p8_Url).append("&");
+		sb.append("p9_SAF=").append(p9_SAF).append("&");
+		sb.append("pa_MP=").append(pa_MP).append("&");
+		sb.append("pd_FrpId=").append(pd_FrpId).append("&");
+		sb.append("pr_NeedResponse=").append(pr_NeedResponse).append("&");
+		sb.append("hmac=").append(hmac);
+
+		// 重定向易宝
+		response.sendRedirect(sb.toString());
+		return null;
+	}
+
+	/**
+	 * 支付回响
+	 * 
+	 * @param r3_Amt
+	 * @param r6_Order
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping("callBack")
+	public String callBack(String r3_Amt, String r6_Order, HttpServletRequest request) {
+		Orders orders = orderService.findOrders(r6_Order);
+		orders.setState(2);
+		orderService.updateState(orders);
+		request.setAttribute("r6_Order", r6_Order);
+		request.setAttribute("r3_Amt", r3_Amt);
+		return "ordersuccess";
+	}
+
+	/**
+	 * 根据提供的oid查询订单内容
+	 * 
+	 */
+	@ResponseBody
+	@RequestMapping("selectProductByOid")
+	public Map<String, String> selectProductByOid(@RequestParam(value = "oid", defaultValue = "1") String oid) {
+		Map<String, String> map = new HashMap<String, String>();
+		Integer uid, pid;
+		List<Integer> uids = new ArrayList<Integer>();
+		List<Integer> pids = new ArrayList<Integer>();
+		List<Orderitem> orderitems = new ArrayList<Orderitem>();
+		List<Product> products = new ArrayList<Product>();
+		// List<Orders> orders = new ArrayList<Orders>();
+
+		List<Orders> OrderList = orderService.findOrderByOid(oid);
+		for (Orders or : OrderList) {
+			uid = or.getUid();
+			uids.add(uid);
+		}
+
+		List<Orderitem> tempitems = orderitemService.findOrderitemByOid(oid);
+		for (Orderitem orderitem : tempitems) {
+			// System.out.println(tempitems.size());
+			orderitems.add(orderitem);
+			// System.out.println(orderitem.getPid());
+			pid = orderitem.getPid();
+			pids.add(pid);
+		}
+		// System.out.println(pids.size());
+		for (Integer t_pid : pids) {
+			List<Product> products_temp = productService.findProductByPid(t_pid);
+			for (Product product : products_temp) {
+				products.add(product);
+			}
+		}
+
+		JSONArray array = new JSONArray();
+		for (int i = 0; i < OrderList.size(); i++) {
+			for (int j = 0; j < products.size(); j++) {
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put("count", orderitems.get(j).getCount());
+				jsonObject.put("subtotal", orderitems.get(j).getSubtotal());
+				jsonObject.put("image", products.get(j).getImage());
+				jsonObject.put("pname", products.get(j).getPname());
+				jsonObject.put("shopprice", products.get(j).getShopprice());
+				array.put(jsonObject);
+			}
+		}
+		map.put("json", array.toString());
+		return map;
+	}
+	
+	@RequestMapping("pay")
+	public String pay(String oid, HttpServletRequest request, Map<String, Object> map) throws IOException {
+
+		String path = request.getSession().getServletContext().getRealPath("uploadimages");
+		
+		Map<String, Object> resultMap = orderService.pay(path,oid);
+
+		map.put("msg", "success");
+		map.put("fileName", resultMap.get("fileNamePath"));
+		map.put("filePath", resultMap.get("filePath"));
+		System.out.println(resultMap.get("fileNamePath"));
+		System.out.println(resultMap.get("filePath"));
+		request.setAttribute("oid", oid);
+		return "orderscancode";
+	}
+	
+	
+	@RequestMapping("alipay_callback")
+	public String alipayCallback(HttpServletRequest request, Map<String, Object> map) {
+		System.out.println("回调成功");
+		Map<String, String> params = Maps.newHashMap();
+		
+		Map requestParams = request.getParameterMap();
+		for (Iterator iter = requestParams.keySet().iterator(); iter.hasNext();) {
+			String name = (String) iter.next();
+			String[] values = (String[]) requestParams.get(name);
+			String valueStr = "";
+
+			for (int i = 0; i < values.length; i++) {
+				valueStr = (i == values.length - 1) ? valueStr + values[i] : valueStr + values[i] + ",";
+			}
+			params.put(name, valueStr);
+		}
+		System.out.println("-------------------------------------------------------");
+		logger.info("支付宝回调,sign:{},trade_status:{},参数:{}",params.get("sign"),params.get("trade_status"),params.toString());
+		System.out.println("-------------------------------------------------------");
+		// 验证回调的争正确性，是不是支付宝发的，并且还要避免重复通知【非常重要】
+		params.remove("sign_type");
+		try {
+			boolean alipayRSACheckedV2 = AlipaySignature.rsaCheckV2(params, Configs.getAlipayPublicKey(), "utf-8", Configs.getSignType());
+			if (!alipayRSACheckedV2) {
+				System.out.println("非法请求，验证不通过，在恶意请求就报警");
+			}
+		} catch (AlipayApiException e) {
+			logger.error("支付宝验证回调异常", e);
+		}
+		return "index";
+	}
+
+}

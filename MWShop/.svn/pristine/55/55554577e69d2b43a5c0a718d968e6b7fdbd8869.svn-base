@@ -1,0 +1,75 @@
+package com.etc.controller;
+
+import com.etc.bean.User;
+import com.etc.service.RegisterService;
+import com.etc.utils.*;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+@Controller
+@RequestMapping("ForgetPW")
+public class ForgetPW {
+	
+	@Autowired
+	RegisterService registerService;
+
+	// 用户名
+	private static String Uid = "Jaydens";
+	// 接口安全秘钥
+	private static String Key = "31c28b677828a9702eb3";
+	
+	//手机号码
+	private static String smsMob;
+	
+	//短信内容
+	private static String smsText;
+
+	
+
+
+	@RequestMapping("updatePossword")
+	public String updatePossword(User user,HttpServletRequest request,String code) {
+		String vcode = (String) request.getSession().getAttribute("vcode");
+		if(!code.equalsIgnoreCase(vcode)){
+			return "redirect:/jsp/forgotpw.jsp?error=c";
+		}
+		MD5Utils md5 =new MD5Utils();
+		user.setPassword(md5.MD5Password(user.getPassword()));
+		
+		
+		registerService.updatePosswordByPhone(user);
+		
+		request.setAttribute("updateSuccess", "恭喜你，密码修改成功！");
+		return "activation";
+	}
+
+	@ResponseBody
+	@RequestMapping("Code")
+	public void Code(String phone,HttpServletRequest request) {	
+		//HttpClientUtil client = HttpClientUtil.getInstance();
+		smsMob = phone;
+		// 验证码
+		String vcode = "";
+		for (int i = 0; i < 6; i++) {
+			vcode = vcode + (int) (Math.random() * 9);
+		}
+		/*smsText="您好，您的验证码是"+vcode+"，验证码30分钟内有效，请尽快完成验证。如非本人操作请忽略。【美唯电器城】";
+		System.out.println(smsText);
+		// UTF发送
+		int result = client.sendMsgUtf8(Uid, Key,smsText ,smsMob);
+		if (result > 0) {
+			System.out.println("UTF8成功发送条数==" + result);
+		} else {
+			System.out.println(client.getErrorMsg(result));
+		}
+		*/
+		request.getSession().setAttribute("vcode", vcode);
+		System.out.println(vcode);
+	}
+
+}

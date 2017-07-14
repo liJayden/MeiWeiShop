@@ -1,0 +1,189 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>后台管理系统</title>
+<meta name="author" content="DeathGhost" />
+<link rel="stylesheet" type="text/css"
+	href="${pageContext.request.contextPath}/acss/style.css">
+<!--[if lt IE 9]>
+<script src="${pageContext.request.contextPath}/ajs/html5.js"></script>
+<![endif]-->
+<script src="${pageContext.request.contextPath}/ajs/jquery.js"></script>
+<script
+	src="${pageContext.request.contextPath}/ajs/jquery.mCustomScrollbar.concat.min.js"></script>
+
+<script>
+	(function($) {
+		$(window).load(
+				function() {
+
+					$("a[rel='load-content']").click(
+							function(e) {
+								e.preventDefault();
+								var url = $(this).attr("href");
+								$.get(url, function(data) {
+									$(".content .mCSB_container").append(data); //load new content inside .mCSB_container
+									//scroll-to appended content 
+									$(".content").mCustomScrollbar("scrollTo",
+											"h2:last");
+								});
+							});
+
+					$(".content").delegate(
+							"a[href='top']",
+							"click",
+							function(e) {
+								e.preventDefault();
+								$(".content").mCustomScrollbar("scrollTo",
+										$(this).attr("href"));
+							});
+
+				});
+	})(jQuery);
+</script>
+</head>
+<body>
+	<!--header-->
+	<header>
+		<h1>
+			<img src="${pageContext.request.contextPath}/aimages/admin_logo.png" />
+		</h1>
+		<ul class="rt_nav">
+			<li><a href="${pageContext.request.contextPath}/jsp/alogin.jsp"
+				class="quit_icon">安全退出</a></li>
+		</ul>
+	</header>
+	<!--aside nav-->
+	<!--aside nav-->
+	<aside class="lt_aside_nav content mCustomScrollbar">
+		<h2>
+			<a href="${pageContext.request.contextPath}/jsp/aindex.jsp">起始页</a>
+		</h2>
+		<ul>
+
+			<li>
+				<dl>
+					<dt>商品分类</dt>
+					<!--当前链接则添加class:active-->
+					<dd>
+						<a href="/MWShop/AController/showCategory">一级分类</a>
+					</dd>
+					<dd>
+						<a href="/MWShop/AControllerSecond/selectAllCategroySecond">二级分类</a>
+					</dd>
+				</dl>
+			</li>
+
+			<li>
+				<dl>
+					<dt>商品详情</dt>
+					<!--当前链接则添加class:active-->
+					<dd>
+						<a href="/MWShop/AProductController/selectAllProduct">商品列表</a>
+					</dd>
+				</dl>
+			</li>
+
+			<li>
+				<dl>
+					<dt>订单信息</dt>
+					<dd>
+						<a href="/MWShop/AOrderController/findOrder">订单列表</a>
+					</dd>
+				</dl>
+			</li>
+
+		</ul>
+	</aside>
+
+	<section class="rt_wrap content mCustomScrollbar">
+		<div class="rt_content">
+			<div class="page_title">
+				<h2 class="fl">修改商品</h2>
+				<a class="fr top_rt_btn"
+					href="/MWShop/AProductController/selectAllProduct">返回产品列表</a>
+			</div>
+			<section>
+
+				<form
+					action="${pageContext.request.contextPath}/AProductController/eidtProduct?pid=${pid}"
+					method="post" enctype="multipart/form-data">
+					<c:forEach items="${productList }" var="productList">
+					<ul class="ulColumn2">
+						<li><span class="item_name" style="width: 120px;">商品名称：</span>
+							<input type="text" class="textbox textbox_295" value="${productList.pname }"
+							placeholder="请输入商品名称" name="pname" /></li>
+						<li><span class="item_name" style="width: 120px;">商品价格：</span>
+							<input type="text" class="textbox" placeholder="请输入商品价格" value="${productList.shopprice }"
+							name="marketprice" /></li>
+
+						<li><span class="item_name" style="width: 120px;">热销价格：</span>
+							<input type="text" class="textbox" placeholder="请输入热销价格" value="${productList.marketprice}"
+							name="shopprice" /></li>
+
+
+						<li><span class="item_name" style="width: 120px;">分类:</span>
+
+							<select class="select" name="csid">
+								<option>选择产品分类</option>
+								<c:forEach items="${categoryseconds}" var="categorysecond">
+									<option value="${categorysecond.csid}" selected>${categorysecond.csname}</option>
+								</c:forEach>
+						</select></li>
+
+						<li><span class="item_name" style="width: 120px;">是否热销：</span>
+							<label class="single_selection"><input type="radio"
+								name="ishot" value="1" />是</label> <label class="single_selection"><input
+								type="radio" name="ishot" value="0" />否</label></li>
+
+						<li><span class="item_name" style="width: 120px;">上传图片：</span>
+							<label class="uploadImg"> <input type="file" id="file_upload" name="pictureFile" /> <span>上传图片</span><div class="image_container">
+								<img id="preview"
+									style="height: 130px; width: 117px; " />
+							</div></li>
+						</label>
+							
+						<li><span class="item_name" style="width: 120px;">产品详情：</span>
+							<textarea name="pdesc" class="textbox" 
+								style="width: 400px; height: 200px; max-width: 400px; max-height: 200px;">${productList.pdesc}</textarea>
+								
+						</li>
+						<li><span class="item_name" style="width: 120px;"></span> <input
+							type="submit" class="link_btn" value="修改" /></li>
+					</ul>
+					</c:forEach>
+				</form>
+			</section>
+		</div>
+	</section>	
+		<script type="text/javascript">
+		$(function () {
+		    $("#file_upload").change(function () {
+		        var $file = $(this);
+		        var fileObj = $file[0];
+		        var windowURL = window.URL || window.webkitURL;
+		        var dataURL;
+		        var $img = $("#preview");
+
+		        if (fileObj && fileObj.files && fileObj.files[0]) {
+		            dataURL = windowURL.createObjectURL(fileObj.files[0]);
+		            $img.attr('src', dataURL);
+		        } else {
+		            dataURL = $file.val();
+		            var imgObj = document.getElementById("preview");
+		            // 两个坑:
+		            // 1、在设置filter属性时，元素必须已经存在在DOM树中，动态创建的Node，也需要在设置属性前加入到DOM中，先设置属性在加入，无效；
+		            // 2、src属性需要像下面的方式添加，上面的两种方式添加，无效；
+		            imgObj.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(sizingMethod=scale)";
+		            imgObj.filters.item("DXImageTransform.Microsoft.AlphaImageLoader").src = dataURL;
+
+		        }
+		    });
+		});
+		
+	</script>
+</body>
+</html>

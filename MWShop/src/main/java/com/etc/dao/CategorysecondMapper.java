@@ -1,0 +1,42 @@
+package com.etc.dao;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
+import com.etc.bean.Categorysecond;
+import com.etc.bean.CategorysecondExample;
+
+public interface CategorysecondMapper {
+    int countByExample(CategorysecondExample example);
+
+    int deleteByExample(CategorysecondExample example);
+
+    int deleteByPrimaryKey(Integer csid);
+
+    int insert(Categorysecond record);
+
+    int insertSelective(Categorysecond record);
+
+    List<Categorysecond> selectByExample(CategorysecondExample example);
+
+    Categorysecond selectByPrimaryKey(Integer csid);
+
+    int updateByExampleSelective(@Param("record") Categorysecond record, @Param("example") CategorysecondExample example);
+
+    int updateByExample(@Param("record") Categorysecond record, @Param("example") CategorysecondExample example);
+
+    int updateByPrimaryKeySelective(Categorysecond record);
+
+    int updateByPrimaryKey(Categorysecond record);
+    
+    List<Categorysecond> selectAllCategroySecond();
+   
+	List<Categorysecond> selectCategorySecondByID(Integer cid);
+
+	List<Categorysecond> selectCategroyLike(String csname);
+
+	List<Categorysecond> findCategorySecondByCsid(Integer csid);
+
+    
+}

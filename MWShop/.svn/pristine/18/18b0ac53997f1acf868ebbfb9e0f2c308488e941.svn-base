@@ -1,0 +1,107 @@
+package com.etc.bean;
+
+import java.io.Serializable;
+import java.sql.Timestamp;
+import java.util.Date;
+
+public class Product implements Serializable{
+    private Integer pid;
+
+    private String pname;
+
+    private Double marketprice;
+
+    private Double shopprice;
+
+    private String image;
+
+    private String pdesc;
+
+    private Integer ishot;
+
+    private Timestamp pdate;
+
+    private Integer csid;
+
+    public Integer getPid() {
+        return pid;
+    }
+
+    public void setPid(Integer pid) {
+        this.pid = pid;
+    }
+
+    public String getPname() {
+        return pname;
+    }
+
+    public void setPname(String pname) {
+        this.pname = pname == null ? null : pname.trim();
+    }
+
+    public Double getMarketprice() {
+        return marketprice;
+    }
+
+    public void setMarketprice(Double marketprice) {
+        this.marketprice = marketprice;
+    }
+
+    public Double getShopprice() {
+        return shopprice;
+    }
+
+    public void setShopprice(Double shopprice) {
+        this.shopprice = shopprice;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image == null ? null : image.trim();
+    }
+
+    public String getPdesc() {
+        return pdesc;
+    }
+
+    public void setPdesc(String pdesc) {
+        this.pdesc = pdesc == null ? null : pdesc.trim();
+    }
+
+    public Integer getIshot() {
+        return ishot;
+    }
+
+    public void setIshot(Integer ishot) {
+        this.ishot = ishot;
+    }
+
+    public Timestamp getPdate() {
+        return pdate;
+    }
+
+    public void setPdate(Timestamp pdate) {
+        this.pdate = pdate;
+    }
+
+    public Integer getCsid() {
+        return csid;
+    }
+
+    public void setCsid(Integer csid) {
+        this.csid = csid;
+    }
+
+	@Override
+	public String toString() {
+		return "Product [pid=" + pid + ", pname=" + pname + ", marketprice="
+				+ marketprice + ", shopprice=" + shopprice + ", image=" + image
+				+ ", pdesc=" + pdesc + ", ishot=" + ishot + ", pdate=" + pdate
+				+ ", csid=" + csid + "]";
+	}
+    
+    
+}
